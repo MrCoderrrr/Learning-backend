@@ -1,0 +1,24 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "learning backend",
+  "keywords": [
+    "backend",
+    "project"
+  ],
+  "homepage": "https://github.com/MrCoderrrr/Learning-backend#readme",
+  "bugs": {
+    "url": "https://github.com/MrCoderrrr/Learning-backend/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MrCoderrrr/Learning-backend.git"
+  },
+  "license": "ISC",
+  "author": "Vanshil Patel",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
