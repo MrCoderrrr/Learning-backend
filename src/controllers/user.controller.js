@@ -27,7 +27,11 @@ const registerUser = asyncHandler(async (req,res) => {
     }
     //check for images and avatars
     const avatarLocalPath = req.files?.avatar[0]?.path;
-    const coverImageLocalPath = req.files?.coverImage[0]?.path;
+    // const coverImageLocalPath = req.files?.coverImage[0]?.path;
+    let coverImageLocalPath
+    if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0){
+         coverImageLocalPath = req.files.coverImage[0].path;
+    }
 
     // check if avatar is fetched or not
     if(!avatarLocalPath){
@@ -46,7 +50,7 @@ const registerUser = asyncHandler(async (req,res) => {
         username:username.toLowerCase(),
         avatar: avatar.url,
         fullName,
-        coverImage: coverImage.url?.url || "",
+        coverImage: coverImage?.url || "",
         email,
         password,
     })
