@@ -24,7 +24,7 @@ class apiError extends Error{
         //than success bool
         this.success = false;
         // than error 
-        this.errors = errors
+        this.error = error
 
         if(stack){
             this.stack = stack
