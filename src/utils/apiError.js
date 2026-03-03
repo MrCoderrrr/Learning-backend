@@ -10,7 +10,7 @@ class apiError extends Error{
         //for multiple error
         error= [],
         // if you have stack than use this 
-        statck =""
+        stack =""
     ){
         //here we are overwritting the actual code of error class 
         // we are overwritting message
@@ -26,8 +26,8 @@ class apiError extends Error{
         // than error 
         this.errors = errors
 
-        if(statck){
-            this.stack = statck
+        if(stack){
+            this.stack = stack
         }
         else{
             Error.captureStackTrace(this, this.constructor)

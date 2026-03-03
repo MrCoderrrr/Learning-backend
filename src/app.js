@@ -28,4 +28,8 @@ app.use(express.static("public"))
 //perform CURD on the cookies of the user 
 app.use(cookieParser())
 
+import userRouter from './routes/user.routes.js';
+
+// declaring routes
+app.use("/api/v1/users",userRouter)
 export { app }
