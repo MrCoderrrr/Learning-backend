@@ -3,6 +3,7 @@
 import { v2 as cloudinary } from "cloudinary";
 // importing inbuilt fs ( file managing ) module to control files
 import fs from "fs";
+import { apiError } from "./apiError.js";
 
 // configuring cloudinary for uploading
 cloudinary.config({
@@ -28,4 +29,19 @@ const uploadOnCloudinary = async (localFilePath) => {
   }
 };
 
-export { uploadOnCloudinary };
+const deleteFromCloudinary = (async (oldCloudinaryLink) => {
+  try { 
+    if(!oldCloudinaryLink){
+      throw new apiError(400,"No url found")
+    }
+    const publicId = oldCloudinaryLink.split("/").pop().split(".")[0]
+
+        const response = await cloudinary.uploader.destroy(publicId)
+        return response
+
+  } catch (error) {
+    throw new apiError(400,"there was an error removing the image from the cloud")
+  }
+})
+
+export { uploadOnCloudinary, deleteFromCloudinary };
