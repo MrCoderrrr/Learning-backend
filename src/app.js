@@ -35,3 +35,6 @@ import userRouter from "./routes/user.routes.js";
 // declaring routes
 app.use("/api/v1/users", userRouter);
 export { app };
+
+import commentRouter from "./routes/comment.routes.js";
+app.use("/api/v1/comments", commentRouter);
