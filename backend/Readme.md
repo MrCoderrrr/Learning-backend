@@ -1,93 +1,133 @@
 <div align="center">
 
-# 📺 YouTube Clone — Backend API
+# 🎬 YouTube Clone — Backend API
 
-### A production-grade REST API replicating the core backend of YouTube
-Built with **Node.js · Express.js · MongoDB · JWT · Cloudinary**
+A production-grade REST API for a video-sharing platform built with **Node.js**, **Express.js**, **MongoDB**, and **Cloudinary**.
 
-[![Node.js](https://img.shields.io/badge/Node.js-18.x-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
-[![Express](https://img.shields.io/badge/Express.js-4.x-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-6.x-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://mongodb.com/)
-[![JWT](https://img.shields.io/badge/JWT-Auth-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)](https://jwt.io/)
-[![Cloudinary](https://img.shields.io/badge/Cloudinary-Media-3448C5?style=for-the-badge&logo=cloudinary&logoColor=white)](https://cloudinary.com/)
+[![Node.js](https://img.shields.io/badge/Node.js-18.x-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Express](https://img.shields.io/badge/Express.js-4.x-000000?style=flat-square&logo=express&logoColor=white)](https://expressjs.com/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-Mongoose-47A248?style=flat-square&logo=mongodb&logoColor=white)](https://mongodb.com/)
+[![JWT](https://img.shields.io/badge/JWT-Auth-000000?style=flat-square&logo=jsonwebtokens)](https://jwt.io/)
+[![Cloudinary](https://img.shields.io/badge/Cloudinary-Media-3448C5?style=flat-square&logo=cloudinary&logoColor=white)](https://cloudinary.com/)
 
 </div>
 
 ---
 
-## 🗂️ Repository Structure
+## 📌 Overview
+
+This backend replicates the core functionality of YouTube — user authentication, video management, social interactions (likes, comments, subscriptions), and channel analytics — organized across **8 modular API domains**.
+
+---
+
+## 🗂️ Project Structure
 
 ```
-youtube-clone-backend/
-└── backend/           ← Full Node.js/Express backend application
-    ├── src/
-    │   ├── controllers/
-    │   ├── models/
-    │   ├── routes/
-    │   ├── middlewares/
-    │   └── utils/
-    ├── .env.example
-    ├── package.json
-    └── README.md      ← Developer setup & API docs
+backend/
+├── src/
+│   ├── controllers/     # Business logic (one file per domain)
+│   ├── models/          # Mongoose schemas
+│   ├── routes/          # Express routers
+│   ├── middlewares/     # Auth (JWT) + Multer (file upload)
+│   ├── utils/           # ApiError, ApiResponse, asyncHandler, cloudinary
+│   ├── db/              # MongoDB connection
+│   ├── app.js           # Express setup
+│   └── index.js         # Entry point
+├── public/temp/         # Temporary local storage (Multer)
+└── .env.example
 ```
 
-> 📌 The entire application lives inside the [`/backend`](./backend) folder. Head there for full setup instructions, API documentation, and environment configuration.
+---
+
+## ⚙️ Local Setup
+
+```bash
+# 1. Clone and navigate
+git clone https://github.com/vanshilpatel/youtube-clone-backend.git
+cd youtube-clone-backend/backend
+
+# 2. Install dependencies
+npm install
+
+# 3. Set up environment variables
+cp .env.example .env   # Fill in all values
+
+# 4. Start the server
+npm run dev            # Runs on http://localhost:8000
+```
+
+### Environment Variables
+
+```env
+PORT=8000
+CORS_ORIGIN=*
+MONGODB_URI=mongodb+srv://<user>:<pass>@cluster.mongodb.net
+ACCESS_TOKEN_SECRET=your_secret
+ACCESS_TOKEN_EXPIRY=1d
+REFRESH_TOKEN_SECRET=your_secret
+REFRESH_TOKEN_EXPIRY=10d
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+```
 
 ---
 
-## 🚀 What This Project Does
+## 📡 API Domains
 
-This project implements a **full-featured video-sharing platform backend** — covering everything from secure authentication to media uploads, social interactions, and analytics — across **8 well-structured API domains**.
+All routes are prefixed with `/api/v1`. ✅ = requires JWT auth.
 
-| Domain | Responsibility |
-|---|---|
-| 👤 Users | Registration, login, profile, avatar/cover upload |
-| 🎬 Videos | Upload, publish/unpublish, search, pagination |
-| 💬 Comments | Add, edit, delete comments on videos |
-| ❤️ Likes | Polymorphic likes on videos, comments & tweets |
-| 🐦 Tweets | Short-form text post creation and management |
-| 🔔 Subscriptions | Subscribe/unsubscribe, channel & subscriber lists |
-| 📂 Playlists | Create, manage, add/remove videos |
-| 📊 Dashboard | Channel stats, upload history, aggregated analytics |
-
----
-
-## ✨ Key Engineering Highlights
-
-- 🔐 **Dual-token JWT Auth** — Short-lived access tokens + long-lived refresh tokens in HTTP-only cookies (XSS-safe)
-- ☁️ **Cloudinary Pipeline** — Multer handles temporary local storage; files auto-upload to Cloudinary with local cleanup
-- 🔁 **Polymorphic Like System** — Single `Like` model handles likes across videos, comments, and tweets
-- 📊 **Aggregation Pipelines** — MongoDB aggregations power channel stats, watch history, subscriber counts & paginated feeds
-- 🧱 **Standardized API Design** — Custom `ApiResponse`, `ApiError`, and `asyncHandler` utilities for clean, consistent DX
-- 📄 **Paginated Video Feed** — `mongoose-aggregate-paginate-v2` for efficient, scalable video listing
+| Domain | Base Route | Key Endpoints |
+|---|---|---|
+| 👤 **Users** | `/users` | register, login, logout, refresh-token, update profile, avatar, watch history |
+| 🎬 **Videos** | `/videos` | upload, get feed (paginated + search), update, delete, toggle publish |
+| 💬 **Comments** | `/comments` | add, edit, delete, get all for a video |
+| ❤️ **Likes** | `/likes` | toggle like on video / comment / tweet, get liked videos |
+| 🐦 **Tweets** | `/tweets` | create, update, delete, get by user |
+| 🔔 **Subscriptions** | `/subscriptions` | toggle subscribe, get subscribers, get subscribed channels |
+| 📂 **Playlists** | `/playlists` | create, update, delete, add/remove videos, get by user |
+| 📊 **Dashboard** | `/dashboard` | channel stats (views, subs, likes), all uploaded videos |
 
 ---
 
-## 🛠️ Tech Stack
+## 🔒 Auth Flow
 
-| Layer | Technology |
-|---|---|
-| Runtime | Node.js |
-| Framework | Express.js |
-| Database | MongoDB + Mongoose ODM |
-| Authentication | JWT (Access + Refresh Tokens) |
-| Media Storage | Cloudinary + Multer |
-| API Testing | Postman |
-| Version Control | Git + GitHub |
+Uses a **dual-token JWT strategy** — short-lived access tokens (1d) and long-lived refresh tokens (10d), both stored in **HTTP-only cookies** to prevent XSS attacks. Refresh tokens are persisted in the database for revocation control.
+
+```
+Login → access token (1d) + refresh token (10d) → stored in HTTP-only cookies
+Token expired? → POST /refresh-token → new access token issued
+Logout → tokens cleared from cookies + DB
+```
+
+---
+
+## ☁️ Media Pipeline
+
+```
+Client (multipart/form-data)
+    → Multer saves file to /public/temp/
+    → Controller calls Cloudinary upload utility
+    → File uploaded to Cloudinary, secure URL returned
+    → Local temp file deleted (fs.unlinkSync)
+    → URL stored in MongoDB
+```
+
+---
+
+## 🛠️ Key Engineering Decisions
+
+- **Polymorphic Like model** — a single `Like` schema handles likes on videos, comments, and tweets using optional reference fields
+- **MongoDB Aggregation Pipelines** — used for channel stats, subscriber counts, watch history (nested `$lookup`), and paginated video feeds via `mongoose-aggregate-paginate-v2`
+- **Utility wrappers** — `asyncHandler` removes try-catch boilerplate; `ApiResponse` and `ApiError` standardize all responses
 
 ---
 
 ## 👨‍💻 Author
 
-**Vanshil Patel**
-B.Tech ICT @ PDEU University · Minor in Computational Data Science · CGPA: 9.12
+**Vanshil Patel** — B.Tech ICT, PDEU University · CGPA: 9.12
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0A66C2?style=flat&logo=linkedin)](https://linkedin.com)
-[![GitHub](https://img.shields.io/badge/GitHub-Follow-181717?style=flat&logo=github)](https://github.com)
-[![LeetCode](https://img.shields.io/badge/LeetCode-170%2B%20Problems-FFA116?style=flat&logo=leetcode)](https://leetcode.com)
-
----
-
-<div align="center">
-  <sub>⭐ If you found this useful, consider starring the repository!</sub>
-</div>
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Vanshil_Patel-0A66C2?style=flat&logo=linkedin)](https://linkedin.com)
+[![GitHub](https://img.shields.io/badge/GitHub-Profile-181717?style=flat&logo=github)](https://github.com)
+[![LeetCode](https://img.shields.io/badge/LeetCode-170%2B_Solved-FFA116?style=flat&logo=leetcode)](https://leetcode.com)
+[![Codeforces](https://img.shields.io/badge/Codeforces-1176_Rating-1F8ACB?style=flat&logo=codeforces)](https://codeforces.com)

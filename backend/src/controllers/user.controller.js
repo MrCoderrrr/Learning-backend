@@ -65,6 +65,19 @@ const registerUser = asyncHandler(async (req, res) => {
   const avatar = await uploadOnCloudinary(avatarLocalPath);
   const coverImage = await uploadOnCloudinary(coverImageLocalPath);
 
+  console.log("AVATAR:", avatar);
+  console.log("COVER IMAGE:", coverImage);
+
+  console.log("about to create user");
+  const user2 = await User.create({
+    username: username.toLowerCase(),
+    avatar: avatar.url,
+    fullName,
+    coverImage: coverImage?.url || "",
+    email,
+    password,
+  });
+  console.log("user created!", user2);
   if (!avatar) {
     throw new apiError(400, "Avatar life is required");
   }
