@@ -7,6 +7,7 @@ import {
 } from "../utils/cloudinary.js";
 import { apiResponse } from "../utils/apiResponse.js";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 
 const generateAccessTokenAndRefereshToken = async (userId) => {
   try {
@@ -67,20 +68,6 @@ const registerUser = asyncHandler(async (req, res) => {
 
   console.log("AVATAR:", avatar);
   console.log("COVER IMAGE:", coverImage);
-
-  console.log("about to create user");
-  const user2 = await User.create({
-    username: username.toLowerCase(),
-    avatar: avatar.url,
-    fullName,
-    coverImage: coverImage?.url || "",
-    email,
-    password,
-  });
-  console.log("user created!", user2);
-  if (!avatar) {
-    throw new apiError(400, "Avatar life is required");
-  }
 
   // create user object - create entry in db
   const user = await User.create({
@@ -143,7 +130,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
   const options = {
     httpOnly: true,
-    secure: true,
+    secure: process.env.NODE_ENV === "production",
   };
 
   res
@@ -168,7 +155,7 @@ const logoutUser = asyncHandler(async (req, res) => {
     req.user._id,
     {
       $set: {
-        refreshToken: 1,
+        refreshToken: null,
       },
     },
     {
@@ -177,7 +164,7 @@ const logoutUser = asyncHandler(async (req, res) => {
   );
   const options = {
     httpOnly: true,
-    secure: true,
+    secure: process.env.NODE_ENV === "production",
   };
 
   return res
@@ -212,7 +199,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
     const options = {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === "production",
     };
 
     const { accessToken, refreshToken: newRefreshToken } =
@@ -345,7 +332,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
   const { username } = req.params;
 
   if (!username?.trim()) {
-    throw new ApiError(400, "username is missing");
+    throw new apiError(400, "username is missing");
   }
 
   const channel = await User.aggregate([
@@ -410,13 +397,13 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
   ]);
 
   if (!channel?.length) {
-    throw new ApiError(404, "channel does not exists");
+    throw new apiError(404, "channel does not exists");
   }
 
   return res
     .status(200)
     .json(
-      new ApiResponse(200, channel[0], "User channel fetched successfully")
+      new apiResponse(200, channel[0], "User channel fetched successfully")
     );
 });
 
