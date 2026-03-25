@@ -59,7 +59,7 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
     throw new apiError(403, "You are not allowed to modify this playlist");
   }
 
-  if (playlist.videos.includes(videoId)) {
+  if (playlist.videos.some((storedVideoId) => storedVideoId.toString() === videoId)) {
     throw new apiError(400, "Video already in playlist");
   }
 

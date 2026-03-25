@@ -1,12 +1,23 @@
+﻿import fs from "fs";
+import path from "path";
 import multer from "multer";
+
+const tempDir = path.resolve("./public/temp");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "./public/temp");
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir, { recursive: true });
+    }
+    cb(null, tempDir);
   },
   filename: function (req, file, cb) {
-    // here we could have store with unique name but the file is going to stay for a very short amount of time so we are saving with the original names
-    cb(null, file.originalname);
+    const extension = path.extname(file.originalname);
+    const baseName = path
+      .basename(file.originalname, extension)
+      .replace(/[^a-zA-Z0-9-_]/g, "_");
+
+    cb(null, `${Date.now()}-${baseName}${extension}`);
   },
 });
 

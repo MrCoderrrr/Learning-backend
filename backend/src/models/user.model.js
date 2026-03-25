@@ -25,6 +25,11 @@ const userSchema = new Schema(
       trim: true,
       index: true,
     },
+    description: {
+      type: String,
+      trim: true,
+      default: "",
+    },
     avatar: {
       type: String, // cloudnary url
       required: true,

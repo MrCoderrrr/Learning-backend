@@ -13,10 +13,9 @@ import {
   getWatchHistory,
   updateAccountDetails,
 } from "../controllers/user.controller.js";
-import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { optionalVerifyJWT, verifyJWT } from "../middlewares/auth.middleware.js";
 
 const router = Router();
-
 router.route("/register").post(
   upload.fields([
     {
@@ -45,6 +44,6 @@ router
   .route("/cover-image")
   .patch(verifyJWT, upload.single("coverImage"), updateUserCoverImage);
 
-router.route("/c/:username").get(verifyJWT, getUserChannelProfile);
+router.route("/c/:username").get(optionalVerifyJWT, getUserChannelProfile);
 router.route("/history").get(verifyJWT, getWatchHistory);
 export default router;

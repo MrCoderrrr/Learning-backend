@@ -9,6 +9,14 @@ import { apiResponse } from "../utils/apiResponse.js";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 
+const authCookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+};
+
+const clearAuthCookies = (res) =>
+  res.clearCookie("accessToken", authCookieOptions).clearCookie("refreshToken", authCookieOptions);
+
 const generateAccessTokenAndRefereshToken = async (userId) => {
   try {
     const user = await User.findById(userId);
@@ -24,31 +32,24 @@ const generateAccessTokenAndRefereshToken = async (userId) => {
 };
 
 const registerUser = asyncHandler(async (req, res) => {
-  //get user details from frontend
-  const { fullName, email, username, password } = req.body;
-  console.log("email: ", email);
-
-  //validation - not empty
-
-  // if(fullName === ""){
-  //     throw new apiError(400,"fullName is required")
-  // }
+  console.log("hello");
+  const { fullName, email, username, password } = req.body;  
   if (
     [fullName, email, username, password].some((field) => field?.trim() === "")
   ) {
     throw new apiError(400, "All fields are required");
   }
 
-  // check if user already exist
+  const normalizedEmail = email.toLowerCase();
+  const normalizedUsername = username.toLowerCase();
+
   const existedUser = await User.findOne({
-    $or: [{ username }, { email }],
+    $or: [{ username: normalizedUsername }, { email: normalizedEmail }],
   });
   if (existedUser) {
     throw new apiError(400, "Unique Email and Username required");
   }
-  //check for images and avatars
-  const avatarLocalPath = req.files?.avatar[0]?.path;
-  // const coverImageLocalPath = req.files?.coverImage[0]?.path;
+  const avatarLocalPath = req.files?.avatar?.[0]?.path;
   let coverImageLocalPath;
   if (
     req.files &&
@@ -58,67 +59,57 @@ const registerUser = asyncHandler(async (req, res) => {
     coverImageLocalPath = req.files.coverImage[0].path;
   }
 
-  // check if avatar is fetched or not
   if (!avatarLocalPath) {
     throw new apiError(400, "Avatar file required");
   }
-  //upload them to cloudinary, and check avatar
   const avatar = await uploadOnCloudinary(avatarLocalPath);
   const coverImage = await uploadOnCloudinary(coverImageLocalPath);
 
-  console.log("AVATAR:", avatar);
-  console.log("COVER IMAGE:", coverImage);
-
-  // create user object - create entry in db
   const user = await User.create({
-    username: username.toLowerCase(),
+    username: normalizedUsername,
     avatar: avatar.url,
     fullName,
     coverImage: coverImage?.url || "",
-    email,
+    email: normalizedEmail,
     password,
   });
 
-  //remove password and refresh token field from response
   const createdUser = await User.findById(user._id).select(
     "-password -refreshToken"
   );
-  //check for user response
+
   if (!createdUser) {
     throw new apiError(500, "Server didnt register user");
   }
-  //return res
+
+  console.log("User Created");
   return res
     .status(201)
     .json(new apiResponse(200, createdUser, "User registered successfully"));
 });
 
 const loginUser = asyncHandler(async (req, res) => {
-  //take data from body
-  //username or email
-  //find user
-  //password check
-  //access and refresh token
-  //send cookie
-
   const { email, username, password } = req.body;
 
   if (!username && !email) {
     throw new apiError(400, "username or email required");
   }
 
+  const normalizedEmail = email?.toLowerCase();
+  const normalizedUsername = username?.toLowerCase();
+
   const user = await User.findOne({
-    $or: [{ username }, { email }],
+    $or: [{ username: normalizedUsername }, { email: normalizedEmail }],
   });
 
   if (!user) {
-    throw new apiError(400, "user not found");
+    throw new apiError(404, "Account not found");
   }
 
   const isPasswordValid = await user.isPasswordCorrect(password);
 
   if (!isPasswordValid) {
-    throw new apiError(404, "Invalid User Credentials");
+    throw new apiError(401, "Wrong password");
   }
 
   const { accessToken, refreshToken } =
@@ -128,15 +119,10 @@ const loginUser = asyncHandler(async (req, res) => {
     "-password -refreshToken"
   );
 
-  const options = {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-  };
-
   res
     .status(200)
-    .cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", refreshToken, options)
+    .cookie("accessToken", accessToken, authCookieOptions)
+    .cookie("refreshToken", refreshToken, authCookieOptions)
     .json(
       new apiResponse(
         200,
@@ -162,15 +148,9 @@ const logoutUser = asyncHandler(async (req, res) => {
       new: true,
     }
   );
-  const options = {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-  };
 
-  return res
+  return clearAuthCookies(res)
     .status(200)
-    .clearCookie("accessToken", options)
-    .clearCookie("refreshToken", options)
     .json(new apiResponse(200, {}, "User logged out successfully"));
 });
 
@@ -197,18 +177,13 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       throw new apiError(401, "Refresh Token expired");
     }
 
-    const options = {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-    };
-
     const { accessToken, refreshToken: newRefreshToken } =
       await generateAccessTokenAndRefereshToken(user._id);
 
     return res
       .status(200)
-      .cookie("accessToken", accessToken, options)
-      .cookie("refreshToken", newRefreshToken, options)
+      .cookie("accessToken", accessToken, authCookieOptions)
+      .cookie("refreshToken", newRefreshToken, authCookieOptions)
       .json(
         new apiResponse(
           200,
@@ -249,9 +224,21 @@ const getCurrentUser = asyncHandler(async (req, res) => {
 });
 
 const updateAccountDetails = asyncHandler(async (req, res) => {
-  const { fullName, email } = req.body;
-  if (!fullName || !email) {
+  const { fullName, email, username, description = "" } = req.body;
+  if (!fullName || !email || !username) {
     throw new apiError(400, "all fields are required");
+  }
+
+  const existingUser = await User.findOne({
+    $or: [
+      { username: username.toLowerCase() },
+      { email: email.toLowerCase() },
+    ],
+    _id: { $ne: req.user?._id },
+  });
+
+  if (existingUser) {
+    throw new apiError(400, "username or email already exists");
   }
 
   const user = await User.findByIdAndUpdate(
@@ -259,7 +246,9 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
     {
       $set: {
         fullName,
-        email,
+        email: email.toLowerCase(),
+        username: username.toLowerCase(),
+        description,
       },
     },
     { new: true }
@@ -283,7 +272,6 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
     throw new apiError(400, "Error in uploading avatar");
   }
 
-  // delete old only after new upload is confirmed successful
   const oldAvatarUrl = req.user?.avatar;
   if (oldAvatarUrl) {
     await deleteFromCloudinary(oldAvatarUrl);
@@ -312,7 +300,6 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
     throw new apiError(400, "Error in uploading avatar");
   }
 
-  // delete old only after new upload is confirmed successful
   const oldCoverImageUrl = req.user?.coverImage;
   if (oldCoverImageUrl) {
     await deleteFromCloudinary(oldCoverImageUrl);
@@ -337,14 +324,11 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
 
   const channel = await User.aggregate([
     {
-      //gets data where username is matched
       $match: {
         username: username?.toLowerCase(),
       },
     },
     {
-      //than lookup search for _id in channel field in Subcription data and add it to the current channel as subscriber
-      //it adds data sheet to the user as channel
       $lookup: {
         from: "subscriptions",
         localField: "_id",
@@ -353,8 +337,6 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
       },
     },
     {
-      // it staples other page to the document with subscribedTo
-      //it is found by searching subscriptions and looking for _id in subscriber and adding the page with heading subscribedTo
       $lookup: {
         from: "subscriptions",
         localField: "_id",
@@ -363,7 +345,6 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
       },
     },
     {
-      // this adds fields that are to be added in the channels
       $addFields: {
         subscribersCount: {
           $size: "$subscribers",
@@ -381,11 +362,11 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
       },
     },
     {
-      // this tells which columns to add and which to not add
-      //the ones that are not added are obv. removed
       $project: {
+        _id: 1,
         fullName: 1,
         username: 1,
+        description: 1,
         subscribersCount: 1,
         channelsSubscribedToCount: 1,
         isSubscribed: 1,
@@ -453,9 +434,9 @@ const getWatchHistory = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(
-      new ApiResponse(
+      new apiResponse(
         200,
-        user[0].watchHistory,
+        user[0]?.watchHistory ?? [],
         "Watch history fetched successfully"
       )
     );

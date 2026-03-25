@@ -4,10 +4,25 @@ import cookieParser from "cookie-parser";
 
 const app = express();
 
-app.use(cors({
-    origin: 'http://localhost:5173',
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(",").map((origin) => origin.trim())
+  : [];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (process.env.NODE_ENV !== "production") {
+        return callback(null, true);
+      }
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
-}));
+  })
+);
 
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
@@ -31,5 +46,16 @@ app.use("/api/v1/playlist", playlistRouter);
 app.use("/api/v1/subscriptions", subscriptionRouter);
 app.use("/api/v1/tweets", tweetRouter);
 app.use("/api/v1/videos", videoRouter);
+
+app.use((err, req, res, next) => {
+  const statusCode = err?.statusCode || 500;
+  const message = err?.message || "Internal server error";
+
+  return res.status(statusCode).json({
+    success: false,
+    message,
+    errors: err?.error || [],
+  });
+});
 
 export { app };

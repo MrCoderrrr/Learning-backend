@@ -1,0 +1,284 @@
+﻿@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  --color-ink-900: 255 255 255;
+  --color-ink-800: 245 245 245;
+  --color-ink-700: 230 230 230;
+  --color-ink-500: 183 183 183;
+  --color-ink-300: 140 140 140;
+  --color-sand-50: 13 13 13;
+  --color-sand-100: 20 20 20;
+  --color-sand-200: 26 26 26;
+  --color-panel-900: 26 26 26;
+  --color-ember-500: 239 111 76;
+  --color-ember-600: 217 95 61;
+  --color-moss-500: 47 111 98;
+  --color-moss-600: 36 88 79;
+  --color-gold-500: 217 164 65;
+  --body-background:
+    radial-gradient(circle at top left, rgba(139, 92, 246, 0.12), transparent 30%),
+    radial-gradient(circle at top right, rgba(34, 211, 238, 0.08), transparent 25%),
+    #0d0d0d;
+  --surface-glass: rgba(26, 26, 26, 0.92);
+  --surface-box: #1a1a1a;
+  --surface-box-soft: rgba(26, 26, 26, 0.78);
+  --surface-media: #121212;
+  --surface-control: #1a1a1a;
+  --surface-control-hover: #232323;
+  --border-soft: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.12);
+  --scroll-thumb: #d9a441;
+  --scroll-track: #1b1b1b;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --color-ink-900: 17 24 39;
+  --color-ink-800: 31 41 55;
+  --color-ink-700: 55 65 81;
+  --color-ink-500: 107 114 128;
+  --color-ink-300: 226 232 240;
+  --color-sand-50: 248 245 240;
+  --color-sand-100: 255 251 245;
+  --color-sand-200: 255 255 255;
+  --color-panel-900: 255 255 255;
+  --color-ember-500: 239 111 76;
+  --color-ember-600: 217 95 61;
+  --color-moss-500: 47 111 98;
+  --color-moss-600: 36 88 79;
+  --color-gold-500: 217 164 65;
+  --body-background:
+    radial-gradient(circle at top left, rgba(239, 111, 76, 0.12), transparent 28%),
+    radial-gradient(circle at top right, rgba(47, 111, 98, 0.12), transparent 24%),
+    #f8f5f0;
+  --surface-glass: rgba(255, 255, 255, 0.82);
+  --surface-box: #ffffff;
+  --surface-box-soft: rgba(255, 255, 255, 0.78);
+  --surface-media: #e5e7eb;
+  --surface-control: #ffffff;
+  --surface-control-hover: #f5f5f5;
+  --border-soft: rgba(15, 23, 42, 0.1);
+  --border-strong: rgba(15, 23, 42, 0.16);
+  --scroll-thumb: #c7833b;
+  --scroll-track: #e8e1d8;
+}
+
+* {
+  scrollbar-color: var(--scroll-thumb) var(--scroll-track);
+  scrollbar-width: thin;
+}
+
+body {
+  font-family: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  background: var(--body-background);
+  color: rgb(var(--color-ink-900));
+  min-height: 100vh;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: "Playfair Display", serif;
+}
+
+::selection {
+  background: rgba(239, 111, 76, 0.25);
+}
+
+.bg-orbit {
+  background: radial-gradient(circle at 10% 20%, rgba(124, 58, 237, 0.2), transparent 45%),
+    radial-gradient(circle at 90% 10%, rgba(34, 211, 238, 0.2), transparent 40%),
+    radial-gradient(circle at 50% 85%, rgba(255, 255, 255, 0.06), transparent 50%);
+}
+
+.glass-panel {
+  background: var(--surface-glass);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-soft);
+}
+
+.layout-frame {
+  width: min(94vw, 1600px);
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+.fade-up {
+  animation: fade-up 0.6s ease-out forwards;
+}
+
+.page {
+  animation: page-in 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.stagger > * {
+  opacity: 0;
+  animation: fade-up 0.6s ease-out forwards;
+}
+
+.stagger > *:nth-child(1) {
+  animation-delay: 0.05s;
+}
+.stagger > *:nth-child(2) {
+  animation-delay: 0.12s;
+}
+.stagger > *:nth-child(3) {
+  animation-delay: 0.18s;
+}
+.stagger > *:nth-child(4) {
+  animation-delay: 0.24s;
+}
+.stagger > *:nth-child(5) {
+  animation-delay: 0.3s;
+}
+.stagger > *:nth-child(6) {
+  animation-delay: 0.36s;
+}
+
+.motion-card {
+  transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+}
+
+.motion-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 22px 50px -35px rgba(11, 15, 20, 0.5);
+  border-color: var(--border-strong);
+}
+
+.motion-button {
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.motion-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px -18px rgba(11, 15, 20, 0.5);
+}
+
+.surface-box {
+  background: var(--surface-box);
+  border: 1px solid var(--border-soft);
+  color: rgb(var(--color-ink-900));
+}
+
+.surface-box-soft {
+  background: var(--surface-box-soft);
+  border: 1px solid var(--border-soft);
+  color: rgb(var(--color-ink-900));
+}
+
+.surface-media {
+  background: var(--surface-media);
+  border: 1px solid var(--border-soft);
+}
+
+.control-dark {
+  border: 1px solid var(--border-strong);
+  background: var(--surface-control);
+  color: rgb(var(--color-ink-900));
+}
+
+.control-dark option {
+  background: var(--surface-control);
+  color: rgb(var(--color-ink-900));
+}
+
+input[type="file"].file-input {
+  font-size: 0.9rem;
+  color: #4b5563;
+}
+
+input[type="file"].file-input::file-selector-button {
+  margin-right: 12px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-control);
+  color: rgb(var(--color-ink-900));
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+input[type="file"].file-input::file-selector-button:hover {
+  background: var(--surface-control-hover);
+}
+
+input[type="file"].file-input::-webkit-file-upload-button {
+  margin-right: 12px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-control);
+  color: rgb(var(--color-ink-900));
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+input[type="file"].file-input::-webkit-file-upload-button:hover {
+  background: var(--surface-control-hover);
+}
+
+@media (max-width: 639px) {
+  .layout-frame {
+    width: min(94vw, 100%);
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1279px) {
+  .layout-frame {
+    width: min(94vw, 1200px);
+  }
+}
+
+@media (min-width: 1280px) {
+  .layout-frame {
+    width: min(95vw, 1560px);
+  }
+}
+
+@media (min-width: 1800px) {
+  .layout-frame {
+    width: min(94vw, 1760px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page,
+  .stagger > *,
+  .motion-card,
+  .motion-button {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

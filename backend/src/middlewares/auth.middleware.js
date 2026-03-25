@@ -31,3 +31,32 @@ export const verifyJWT = asyncHandler(async (req, _, next) => {
     throw new apiError(401, error?.message || "Invalid Access Tokem");
   }
 });
+
+export const optionalVerifyJWT = asyncHandler(async (req, _, next) => {
+  try {
+    const token =
+      req.cookies?.accessToken ||
+      req
+        .header("Authorization")
+        ?.replace(/^Bearer\s+/i, "")
+        ?.trim();
+
+    if (!token) {
+      return next();
+    }
+
+    const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+
+    const user = await User.findById(decodedToken?._id).select(
+      "-password -refreshToken"
+    );
+
+    if (user) {
+      req.user = user;
+    }
+
+    return next();
+  } catch {
+    return next();
+  }
+});
